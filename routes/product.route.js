@@ -2,7 +2,7 @@ import express from "express";
 import Product from "../models/product.model.js";
 const router = express.Router();
 import { getProducts, getProductById ,createProduct, updateProduct, deleteProduct, uploadProductImage  } from "../controllers/product.controller.js";
-import upload from "../middlewares/upload.js";
+import upload from "../upload.js";
 
 
 router.get("/", getProducts);

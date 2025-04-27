@@ -3,11 +3,12 @@ import mongoose from "mongoose";
 import Product from "./models/product.model.js";
 import productRoute from "./routes/product.route.js";
 const app = express();
-
+import path from "path";
 
 //middleware
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
+app.use('/images', express.static(path.join(process.cwd(), 'public/images')));
 
 
 //routes

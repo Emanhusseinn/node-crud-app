@@ -2,8 +2,18 @@ import Product from "../models/product.model.js";
 
 const getProducts = async (req, res) => {
     try {
-        const products = await Product.find({});
-        res.status(200).json(products);
+      const { page = 1, limit = 10 } = req.query;
+        const products = await Product.find({})
+        .skip((page - 1) * limit)
+        .limit(Number(limit));
+        const total = await Product.countDocuments();
+        res.status(200).json(
+          {total,
+          page: Number(page), 
+          limit: Number(limit),
+          totalPages: Math.ceil(total / limit),
+          data: products}
+        );
       } catch (error) {
         res.status(500).json({
           message: error.message,
@@ -38,22 +48,21 @@ const createProduct = async (req, res) => {
         console.log(error);
       }
 }
-    
+
 const updateProduct = async (req, res) => {
-      try {
-        const { id } = req.params;
-        const product = await Product.findByIdAndUpdate(id, req.body);
-        if (!product) {
-          return res.status(404).json({ message: "Product not found" });
-        }
-        const updatedProduct = await Product.findById(id);
-        res.status(200).json(updatedProduct);
-      } catch (error) {
-        res.status(500).json({
-          message: error.message,
-        });
-        console.log(error);
-      }
+  try {
+    const { id } = req.params;
+    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, { new: true }); //برجع نسخة البروداكت بعد ما يتحدث مش قبل التحديث
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+    console.log(error);
+  }
 }
 
 const deleteProduct = async (req, res) => {
@@ -72,10 +81,33 @@ const deleteProduct = async (req, res) => {
       }
 }
 
+
+  const uploadProductImage = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const imagePath = req.file.path;
+
+      const product = await Product.findByIdAndUpdate(
+        id,
+        { image: imagePath },
+        { new: true }
+      );
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      res.status(200).json(product);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+
 export {
   getProducts,
   getProductById,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  uploadProductImage
 }
